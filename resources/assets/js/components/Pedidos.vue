@@ -9,6 +9,18 @@
                 </button>
             </ol>
             <div class="container-fluid">
+                <!--Botonera-->
+                <div class="card" v-if="listado == 2">
+                    <div class="card-body">
+                        <button class="btn btn-info" @click="editarPedido()"><i class="icon-pencil"></i>&nbsp;Editar</button>
+                        <button class="btn btn-info" @click="imprimirPedido()"><i class="icon-printer"></i>&nbsp;Imprimir</button>
+                    </div>
+                </div>
+                <div class="alert alert-danger" v-if="errorIngreso >0">
+                    <ul>
+                        <li v-for="val in errorMsgIngreso" :key="val.id" v-text="val"></li>
+                    </ul>
+                </div>
                 <!-- Ejemplo de tabla Listado -->
                 <div class="card">
                     <div class="card-header">
@@ -70,6 +82,7 @@
                                     <td v-text="pedido.Comentarios"></td>
                                 </tr>
                             </tbody>
+                            
                         </table>
                         <nav>
                             <ul class="pagination">
@@ -88,10 +101,25 @@
                     </template>
                     <!--Fin Listado Ingresos-->
 
-                    <!--Listado de detalle-->
+                    <!--Nuevo Pedido-->
                     <template v-else-if="listado == 0">
                     <div class="card-body">
-                        <div class="form-group row border">
+                        <!-- <div class="form-group row border">
+                            <div class="col-md-3" v-if="usuario.Tipo != 2">
+                                <div class="form-group">
+                                    <label>Tercero </label>
+                                    <span style="color:red" v-show="idtercero ==0">(Seleccione *)</span>
+                                    <v-select
+                                        @search="selectTerceros"
+                                        label="NombreCorto"
+                                        :options="arrayTerceros"
+                                        placeholder="Buscar Tercero..."
+                                        @input="getDatosTercero"                                 
+                                    >
+                                    </v-select>
+                                </div>
+                            </div>
+
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Direccion</label>
@@ -164,7 +192,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
+                        <nuevomovimiento  :IdDocSeleccionado="id_documento" ></nuevomovimiento>
 
                         <div class="form-group row border" v-if="id_direccion>0">
                             <div class="col-md-6">
@@ -250,7 +279,7 @@
                         <div class="form-group row">
                             <div class="col-md-12">
                                 <button type="button" @click="ocultarDetalle()" class="btn btn-secondary">Cerrar</button>
-                                <button type="button" class="btn btn-primary" @click="registrarIngreso()">Registrar Pedido</button>
+                                <button type="button" class="btn btn-primary" @click="registrarPedido()">Registrar Pedido</button>
                             </div>
                         </div>
                     </div>
@@ -401,6 +430,101 @@
                     </template>
                     <!-- Fin ver ingreso-->
 
+                    <!--Editar Pedido-->
+                    <template v-else-if="listado == 3">
+                    <div class="card-body">
+                        <nuevomovimiento  :IdDocSeleccionado="id_documento" :Editar="editar" :IdMovimiento="idmovimiento"></nuevomovimiento>
+                        <div class="form-group row border" v-if="id_direccion>0">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Artículo <span style="color:red" v-show="idarticulo ==0">(Seleccione *)</span></label>
+                                    <div class="form-inline">
+                                            <input type="text" class="form-control" v-model="codigo" @keyup.enter="buscarArticulo()" placeholder="Ingrese artículo">
+                                            <button class="btn btn-primary" @click="AbrirModal()" value="">...</button>
+                                            <input type="text" readonly="" class="form-control" v-model="articulo">
+                                    </div>                                    
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>Precio <span style="color:red" v-show="precio ==0">(Ingrese *)</span></label>
+                                    <input type="number" value="0" step="any" class="form-control" v-model="precio" disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>Cantidad <span style="color:red" v-show="cantidad ==0">(Ingrese *)</span></label>
+                                    <input type="number" value="0" class="form-control" v-model="cantidad">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <button @click="agregarDetalle()" class="btn btn-success form-control btnagregar"><i class="icon-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row border">
+                            <div class="table-responsive col-md-12">
+                                <table class="table table-bordered table-striped table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Opciones</th>
+                                            <th>Artículo</th>
+                                            <th>Precio</th>
+                                            <th>Iva</th>
+                                            <th>Cantidad</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody v-if="arrayDetalle.length">
+                                        <tr v-for="(detalle,index) in arrayDetalle" :key="detalle.id">
+                                            <td>
+                                                <button type="button" @click="eliminarDetalleEdit(index,detalle.IdMovimientoDet)" class="btn btn-danger btn-sm">
+                                                    <i class="icon-close"></i>
+                                                </button>
+                                            </td>
+                                            <td v-text="detalle.Descripcion"></td>
+                                            <td v-text="FormatoMoneda(detalle.Precio,2)"></td>
+                                            <td v-text="FormatoMoneda(detalle.PorIva,2)"></td>
+                                            <td>
+                                                <input type="number" v-model="detalle.Cantidad" class="form-control">
+                                            </td>
+                                            <td v-text="FormatoMoneda((detalle.Precio * detalle.Cantidad),2)"> </td>
+                                        </tr>
+                                      
+                                        <tr style="background-color: #CEECF5;">
+                                            <td colspan="5" align="right"><strong>Sub Total:</strong></td>
+                                            <td>$ {{FormatoMoneda(total = (calcularTotal ),2)}}</td>
+                                        </tr>
+                                        <tr style="background-color: #CEECF5;">
+                                            <td colspan="5" align="right"><strong>Total Impuesto:</strong></td>
+                                            <td>$ {{FormatoMoneda(impuesto,2)}}</td>
+                                        </tr>
+                                        <tr style="background-color: #CEECF5;">
+                                            <td colspan="5" align="right"><strong>Total Neto:</strong></td>
+                                            <td>$ {{FormatoMoneda(TotalNeto = (total + impuesto))}}</td>
+                                        </tr>
+                                    </tbody>  
+                                    <tbody v-else>
+                                        <tr>
+                                            <td colspan="5">No hay articulos</td>
+                                        </tr>
+                                    </tbody>                                 
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <button type="button" @click="ocultarDetalleEdit()" class="btn btn-secondary">Cancelar</button>
+                                <button type="button" class="btn btn-primary" @click="actualizarPedido()">Actualizar Pedido</button>
+                            </div>
+                        </div>
+                    </div>
+                    </template>
+                    <!--Fin Editar Pedido-->
+
                 </div>
                 <!-- Fin ejemplo de tabla Listado -->
             </div>
@@ -490,23 +614,19 @@
             <!--Fin del modal-->
             
             <!--Inicio Loader-->
-            <div class="vld-parent">
-                <loading :active.sync="isLoading" 
-                :can-cancel="true" 
-                :on-cancel="onCancel"
-                :is-full-page="fullPage"></loading>
-            </div>
+            <loader :isLoading="isLoading"></loader>
 </main>
  <!-- /Fin del contenido principal -->
  
 </template>
 
 <script>
-    // Import component
-    import Loading from 'vue-loading-overlay';
-    // Import stylesheet
-    import 'vue-loading-overlay/dist/vue-loading.css';
+    import Vue from "vue";
+    import vSelect from "vue-select";
 
+    Vue.component("v-select", vSelect);
+    import "vue-select/dist/vue-select.css";
+    import {mapState,mapActions} from 'vuex'
     export default {
         data() {
             return {
@@ -514,7 +634,14 @@
                 //Variables Encabezado Movimiento
                 idmovimiento: 0,
                 nro_documento:0,
-                idtercero:0,
+                id_documento:61,
+                fecha : '',
+                fecha1 : '',
+                fecha2 : '',
+                estado:'',
+                soporte:'',
+                direccion:'',
+                /*idtercero:0,
                 nombre : '',
                 fecha : '',
                 fecha1 : '',
@@ -533,12 +660,12 @@
                 prioridad:'1',
                 fecha_minima:'',
                 fecha_maxima:'',
-                num_orden:'',
+                num_orden:'',*/
                 
 
                 arrayPedidos : [],
                 arrayDetalle : [],
-                arrayProveedor :[],
+                arrayTerceros :[],
                 arrayCondicionEntrega:[],
                 arrayDirecciones: [],
 
@@ -560,12 +687,14 @@
                 
 
                 listado:1,//Me va mostrar el listado ingreso activo
+                editar :false,
+
 
                 modal:0,//Cuando este en 1 se abre el modal
                 tituloModal :'',//Pone el texto en el modal
                 tipoAccion : 0,//1 es registrar , 2 es actualizar
-                errorIngreso:0,//Valida si al crear una roles los formularios le falta un dato
-                errorMsgIngreso:[],//Validamos el campo categoria    
+                errorIngreso:0,//Es 1 cuando hay validaciones sin pasar
+                errorMsgIngreso:[],//Guarda el array de las validaciones    
                 pagination :{//Esta propiedad la envia laravel con el metodo paginate para utilizarla en la paginacion con vue
                     'total' :0,
                     'current_page' :0,
@@ -575,7 +704,7 @@
                     'to':0,
                 },
                 offset : 4,//Esta variable hace referecia al paginate(3) del controlador
-                criterio : 'nombre', //Esta variable se inicializa con nombre por que es el primer criterio del combo
+                criterio : 'NroDocumento', //Esta variable se inicializa con nombre por que es el primer criterio del combo
                 buscar :'',//Esta es la cadena de busqueda
 
                 //Variables de articulo modal 
@@ -583,12 +712,7 @@
                 criterioArt :'codigo',
                 arrayArticulos :[],
                 isLoading: false,
-                fullPage: true
             }
-        },
-
-        components: {
-            Loading
         },
 
         computed: {
@@ -636,8 +760,99 @@
                 }
                 this.impuesto = porIva;
                 return resultado;
-            }
+            },
+            
+            //Obtenemos el usuario almacenado en el state de vuex
+            ...mapState('Usuario',['usuario']),
+            id_direccion:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.id_direccion
+                },
+                set(value){
+                    this.SET_VARIABLES({'id_direccion':value})
+                }
+            },
+
+            idtercero:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.idtercero
+                },
+                set(value){
+                    this.SET_VARIABLES({'idtercero':value})
+                }
+            },
+
+            fecha_minima:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.fecha_minima
+                },
+                set(value){
+                    this.SET_VARIABLES({'fecha_minima':value})
+                }
+            },
+
+            fecha_maxima:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.fecha_maxima
+                },
+                set(value){
+                    this.SET_VARIABLES({'fecha_maxima':value})
+                }
+            },
+            condicion_entrega:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.condicion_entrega
+                },
+                set(value){
+                    this.SET_VARIABLES({'condicion_entrega':value})
+                }
+            },
+            prioridad:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.prioridad
+                },
+                set(value){
+                    this.SET_VARIABLES({'prioridad':value})
+                }
+            },
+            comentarios:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.comentarios
+                },
+                set(value){
+                    this.SET_VARIABLES({'comentarios':value})
+                }
+            },
+
+            forma_pago:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.forma_pago
+                },
+                set(value){
+                    this.SET_VARIABLES({'forma_pago':value})
+                }
+            },
+
+            num_orden:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.num_orden
+                },
+                set(value){
+                    this.SET_VARIABLES({'num_orden':value})
+                }
+            },
+
+            asesor:{
+                get(){ 
+                    return this.$store.state.NuevoMovimiento.asesor
+                },
+                set(value){
+                    this.SET_VARIABLES({'asesor':value})
+                } 
+            },
+
         },
+
         
         methods: {
             ListarIngresos(page,buscar,criterio){//Lista el array categorias.
@@ -668,8 +883,8 @@
                 }
             },
 
-            registrarIngreso(){//Registra un nuevo pedido
-                if(this.ValidarIngreso()){
+            registrarPedido(){//Registra un nuevo pedido
+                if(this.ValidarPedido()){
                     return false;
                 } 
                 Swal.fire({
@@ -690,6 +905,7 @@
                             this.isLoading = true;
                             let me =this;
                             axios.post('/pedido/registrar', {
+                                'idtercero':this.idtercero,
                                 'fecha_minima': this.fecha_minima,
                                 'fecha_maxima': this.fecha_maxima,
                                 'id_direccion': this.id_direccion,
@@ -735,11 +951,95 @@
                             .catch(function (error) {
                                 me.isLoading = false;
                                 //console.log(error);
+                                console.log(error);
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Oops...',
                                     text: 'Ocurrio un error al crear el pedido!'
                                 })
+                                console.log(error);
+                            });
+                        }
+                    })
+            },
+
+            actualizarPedido(){//Registra un nuevo pedido
+                if(this.ValidarPedido()){
+                    return false;
+                } 
+                Swal.fire({
+                    title: 'Estas seguro(a) de Autorizar el pedido ?',
+                    text: "Si lo autorizas no podras modificar ningún dato de los ingresados.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    customClass: {
+                        confirmButton: 'btn btn-success',
+                        cancelButton: 'btn btn-warning'
+                    },
+                    buttonsStyling: false,
+                    cancelButtonText: 'Validar',
+                    confirmButtonText: 'Actualizar !',
+                    showLoaderOnConfirm: true,
+                    }).then((result) => {
+                        if (result.value) {
+                            this.isLoading = true;
+                            let me =this;
+                            axios.put('/pedido/actualizar', {
+                                'idmovimiento':me.idmovimiento,
+                                'idtercero':me.idtercero,
+                                'fecha_minima': me.fecha_minima,
+                                'fecha_maxima': me.fecha_maxima,
+                                'id_direccion': me.id_direccion,
+                                'condicion_entrega': me.condicion_entrega,
+                                'num_orden':me.num_orden,
+                                'prioridad':me.prioridad,
+                                'comentarios':me.comentarios,
+                                'sub_total':me.total,
+                                'total':me.TotalNeto,
+                                'total_iva':me.impuesto,
+                                'data':me.arrayDetalle,
+                            })
+                            .then(function (response) {
+                                var IdMovRegistrado = response.data.movimiento;
+                                me.idmovimiento= 0;
+                                me.nro_documento=0;
+                                me.idtercero=0;
+                                me.nombre = '';
+                                me.fecha = '';
+                                me.fecha1 = '';
+                                me.fecha2 = '';
+                                me.condicion_entrega ='2';
+                                me.estado='';
+                                me.soporte='';
+                                me.id_direccion='0';
+                                me.direccion='';
+                                me.asesor='';
+                                me.forma_pago='';
+                                me.total_iva=0;
+                                me.sub_total=0;
+                                me.total=0;
+                                me.comentarios='';
+                                me.prioridad='1';
+                                me.fecha_minima='';
+                                me.fecha_maxima='';
+                                me.num_orden='';
+                                me.arrayDetalle =[];
+
+                                me.editar = false;
+                                me.CerrarModal();
+                                me.verPedido(IdMovRegistrado);
+                                me.isLoading = false;
+                            })
+                            .catch(function (error) {
+                                me.isLoading = false;
+                                //console.log(error);
+                                console.log(error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Ocurrio un error al crear el pedido!'
+                                })
+                                console.log(error);
                             });
                         }
                     })
@@ -767,12 +1067,50 @@
                     me.estado=objPedido.Estado;
                     me.soporte=objPedido.Soporte;
                     me.direccion = objPedido.NmDireccion;
-                    me.asesor = objPedido.IdAsesor;
+                    //me.asesor = objPedido.IdAsesor;
                     me.forma_pago= me.formaPago(objPedido.IdFormaPago);
                     me.comentarios = objPedido.Comentarios;
                     me.asesor = objPedido.Asesor;
 
+                    me.arrayDetalle = [];
+                    objpedidosDet.forEach(detalle => {
+                        me.arrayDetalle.push(detalle);
+                    });
+                })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error);
+                });
+            },
 
+            verPedidoEdit(id){
+                this.obtenerDirecciones();
+                let me = this;
+                var url = '/pedido/obtenerPedido?id='+id;
+                axios.get(url).then(function (response) {
+                    var respuesta = response.data;
+                    var objPedido = respuesta.pedido;
+                    var objpedidosDet = response.data.detalles;
+                    objPedido = objPedido[0];
+                    var IdCondEntrega = objPedido.IdCondEntrega;
+                    me.idmovimiento= objPedido.IdMovimiento;
+                    me.nro_documento= objPedido.NroDocumento;
+                    me.impuesto = objPedido.VrIva;
+                    me.idtercero= objPedido.IdTercero;
+                    me.nombre = objPedido.NombreCorto;
+                    me.fecha = objPedido.Fecha;
+
+                    me.fecha_minima = objPedido.Fecha1;
+                    me.fecha_maxima = objPedido.Fecha2;
+                    me.condicion_entrega = objPedido.IdCondEntrega;
+                    me.estado=objPedido.Estado;
+                    me.num_orden=objPedido.Soporte;
+                    me.id_direccion = objPedido.IdDireccion;
+                    me.asesor = objPedido.IdAsesor;
+                    me.forma_pago= me.formaPago(objPedido.IdFormaPago);
+                    me.comentarios = objPedido.Comentarios;
+
+                    me.arrayDetalle = [];
                     objpedidosDet.forEach(detalle => {
                         me.arrayDetalle.push(detalle);
                     });
@@ -785,7 +1123,7 @@
 
             mostrarDetalle(){
                 this.listado = 0;
-                this.idproveedor = 0;
+                this.idtercero = 0;
                 this.tipo_comprobante='BOLETA';
                 this.serie_comprobante='';
                 this.num_comprobante='';
@@ -843,9 +1181,21 @@
                 this.arrayArticulos = [];
             },
 
-            selectProveedor(){
-
+            selectTerceros(search,loading){
+                let me=this;
+                loading(true);
+                var url= '/terceros/ObtenerTerceros?filtro='+search;
+                axios.get(url).then(function (response) {
+                    let respuesta = response.data;
+                    q: search;
+                    me.arrayTerceros = respuesta.terceros;
+                    loading(false);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
             },
+            ...mapActions('NuevoMovimiento',['SET_VARIABLES']),
 
             DesactivarIngreso(IdIngreso){//Desactiva una categoria y usa el swetalerts2 
                 const swalWithBootstrapButtons = Swal.mixin({
@@ -895,7 +1245,7 @@
                 })
             },
 
-            ValidarIngreso(){
+            ValidarPedido(){
                 this.errorIngreso =0;
                 this.errorMsgIngreso =[];
                 if(this.id_direccion ==''){
@@ -937,7 +1287,7 @@
                 axios.get(url).then(function (response) {
                     let respuesta = response.data;
                     q: search;
-                    me.arrayProveedor = respuesta.proveedores;
+                    me.arrayTerceros = respuesta.proveedores;
                     loading(false);
                 })
                 .catch(function (error) {
@@ -945,10 +1295,17 @@
                 });
             },
 
-            getDatosProveedor(val1){
+            getDatosTercero(val1){
                 let me = this;
-                me.loading = true;
-                me.idproveedor = val1.id;
+                try{
+                    me.loading = true;
+                    me.idtercero = val1.IdTercero;
+                    me.obtenerDirecciones();
+                }
+                catch(error){
+                    me.idtercero = 0;
+                    me.obtenerDirecciones();
+                }
             },
 
             agregarDetalle(){
@@ -957,43 +1314,85 @@
 
                 }
                 else{
-                    if(!me.encuentra(me.idarticulo)){
-                        me.arrayDetalle.push({
-                            idarticulo: me.idarticulo,
-                            articulo: me.articulo,
-                            cantidad: me.cantidad,
-                            precio: me.precio,
-                            iva: me.iva
-                        });
-                        me.idarticulo=0,
-                        me.articulo='',
-                        me.cantidad=0,
-                        me.precio=0,
-                        me.iva=0;
-                        me.codigo=''
+                    if(me.editar == false){
+                        if(!me.encuentra(me.idarticulo)){
+                            me.arrayDetalle.push({
+                                idarticulo: me.idarticulo,
+                                articulo: me.articulo,
+                                cantidad: me.cantidad,
+                                precio: me.precio,
+                                iva: me.iva
+                            });
+                            me.idarticulo=0,
+                            me.articulo='',
+                            me.cantidad=0,
+                            me.precio=0,
+                            me.iva=0;
+                            me.codigo=''
+                        }
+                        else{
+                            Swal.fire({
+                                icon :'error',
+                                type :'error',
+                                title :'',
+                                text:'El articulo '+me.articulo+' ya se encuentra en la lista"'
+                            })
+                            me.idarticulo=0,
+                            me.articulo='',
+                            me.cantidad=0,
+                            me.precio=0,
+                            me.iva=0;
+                            me.codigo=''
+                        }
                     }
-                    else{
-                        Swal.fire({
-                            icon :'error',
-                            type :'error',
-                            title :'',
-                            text:'El articulo '+me.articulo+' ya se encuentra en la lista"'
-                        })
-                        me.idarticulo=0,
-                        me.articulo='',
-                        me.cantidad=0,
-                        me.precio=0,
-                        me.iva=0;
-                        me.codigo=''
+                    else if(me.editar == true){
+                        if(!me.encuentraId(me.Id_Item)){
+                            me.arrayDetalle.push({
+                                IdMovimientoDet:0,
+                                Id_Item: me.idarticulo,
+                                Descripcion: me.articulo,
+                                Cantidad: me.cantidad,
+                                Precio: me.precio,
+                                PorIva: me.iva
+                            });
+                            me.idarticulo=0,
+                            me.articulo='',
+                            me.cantidad=0,
+                            me.precio=0,
+                            me.iva=0;
+                            me.codigo=''
+                        }
+                        else{
+                            Swal.fire({
+                                icon :'error',
+                                type :'error',
+                                title :'',
+                                text:'El articulo '+me.articulo+' ya se encuentra en la lista"'
+                            })
+                            me.idarticulo=0,
+                            me.articulo='',
+                            me.cantidad=0,
+                            me.precio=0,
+                            me.iva=0;
+                            me.codigo=''
+                        }
                     }
-
-                    
                 }
             },
             encuentra(idart){
                 let valida = false;
                 for(let i=0;i<this.arrayDetalle.length;i++){
                     if(this.arrayDetalle[i]['idarticulo'] == idart){
+                        valida = true;
+                    }
+                }
+                return valida;
+            },
+
+            encuentraId(idart){
+                let valida = false;
+                for(let i=0;i<this.arrayDetalle.length;i++){
+                    if(this.arrayDetalle[i]['Id_Item'] == idart){
                         valida = true;
                     }
                 }
@@ -1072,34 +1471,68 @@
 
             agregarDetalleModal(data=[]){
                 let me = this;
-                if(!me.encuentra(data.Id_Item)){
-                    me.arrayDetalle.push({
-                        idarticulo: data.Id_Item,
-                        articulo: data.Descripcion,
-                        cantidad: 1,
-                        precio: data.Precio,
-                        iva: data.Por_Iva
-                    });
-                    Swal.fire({
-                        icon :'success',
-                        type :'success',
-                        title :'',
-                        text:'El articulo '+data.Descripcion+' se agrego"'
-                    })
+                if(me.editar == false){
+                    if(!me.encuentra(data.Id_Item)){
+                        me.arrayDetalle.push({
+                            idarticulo: data.Id_Item,
+                            articulo: data.Descripcion,
+                            cantidad: 1,
+                            precio: data.Precio,
+                            iva: data.Por_Iva
+                        });
+                        Swal.fire({
+                            icon :'success',
+                            type :'success',
+                            title :'',
+                            text:'El articulo '+data.Descripcion+' se agrego"'
+                        })
+                    }
+                    else{
+                        Swal.fire({
+                            icon :'error',
+                            type :'error',
+                            title :'',
+                            text:'El articulo '+data.Descripcion+' ya se encuentra en la lista"'
+                        })
+                    }
                 }
-                else{
-                    Swal.fire({
-                        icon :'error',
-                        type :'error',
-                        title :'',
-                        text:'El articulo '+data.Descripcion+' ya se encuentra en la lista"'
-                    })
+                else if(me.editar == true){
+                    if(!me.encuentraId(data.Id_Item)){
+                        me.arrayDetalle.push({
+                            IdMovimientoDet:0,
+                            Id_Item: data.Id_Item,
+                            Descripcion: data.Descripcion,
+                            Cantidad: 1,
+                            Precio: data.Precio,
+                            PorIva: data.Por_Iva
+                        });
+                        Swal.fire({
+                            icon :'success',
+                            type :'success',
+                            title :'',
+                            text:'El articulo '+data.Descripcion+' se agrego"'
+                        })
+                    }
+                    else{
+                        Swal.fire({
+                            icon :'error',
+                            type :'error',
+                            title :'',
+                            text:'El articulo '+data.Descripcion+' ya se encuentra en la lista"'
+                        })
+                    }
                 }
+                
             },
 
             obtenerDirecciones(){
                 let me = this;
-                var url = '/direcciones/tercero';
+                if(me.idtercero !=''){
+                    var url = '/direcciones/tercero/'+me.idtercero;
+                }
+                else{
+                    var url = '/direcciones/tercero/'+me.idtercero;
+                }
                 axios.get(url).then(function (response) {
                     //Asi le asignamos al array categoria los datos de la respuesta
                     var respuesta = response.data;
@@ -1135,17 +1568,6 @@
 
                 return  sign ? '-' + amount_parts.join('.') : amount_parts.join('.');
             },
-            doAjax() {
-                this.isLoading = true;
-                // simulate AJAX
-                setTimeout(() => {
-                  this.isLoading = false
-                },5000)
-            },
-
-            onCancel() {
-              console.log('User cancelled the loader.')
-            },
 
             formaPago(Id){
                 let NmFormaPago ='';
@@ -1166,9 +1588,87 @@
                     NmFormaPago = '';
                 }
                 return NmFormaPago;
+            },
+
+            editarPedido(){
+                Swal.fire({
+                    title: '',
+                    text: "Estas seguro(a) de editar este pedido ?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'Editar !',
+                    }).then((result) => {
+                    if (result.value) {
+                        let me = this;
+                        this.editar =true;
+                        this.listado = 3;
+                        this.verPedidoEdit(this.idmovimiento)
+                    }
+                })
+                
+            },
+
+            ocultarDetalleEdit(){
+                this.editar =false;
+                this.listado = 2;
+                this.verPedido(this.idmovimiento)
+            },
+
+            eliminarDetalleEdit(index,Id){
+
+                let producto = this.arrayDetalle[index]['Descripcion'];
+                Swal.fire({
+                    title: '',
+                    text: "Estas seguro de eliminar "+producto+" de la lista ?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'Eliminar !',
+                    }).then((result) => {
+                    if (result.value) {
+                        let me = this;
+                        me.arrayDetalle.splice(index,1);
+                        if(Id>0){
+                            axios.delete('/pedido/eliminardet'+'?Id='+Id).then(function (response) {
+                                var Respuesta = responde.data;
+                            })
+                            .catch(function (error) {
+                                console.log(error);
+                            });
+                        }
+                        Swal.fire(
+                        producto+' Eliminado!',
+                        '',
+                        'success'
+                        )
+                    }
+                })
+
+               
+            },
+
+            imprimirPedido(){
+                let me = this;
+                axios({url: '/pedidos/imprimir'+'?Id='+me.idmovimiento, method: 'GET',responseType: 'blob', // important
+
+                }).then((response) => {
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'pedido'+me.nro_documento+'.pdf');
+                    document.body.appendChild(link);
+                    link.click();
+                });
             }
 
         },
+
+        
 
         mounted() {//Inicializa el constructor
             this.ListarIngresos(1,this.buscar,this.criterio);

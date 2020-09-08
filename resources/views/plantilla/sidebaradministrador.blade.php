@@ -35,6 +35,15 @@
                     <li class="nav-item" @click="menu=7">
                         <a class="nav-link" href="#"><i class="icon-basket-loaded"></i> Pedidos</a>
                     </li>
+
+                    <li class="nav-item" @click="menu=14">
+                        <a class="nav-link" href="#"><i class="icon-basket-loaded"></i> Facturación</a>
+                    </li>
+
+                    <li class="nav-item" @click="menu=15">
+                        <a class="nav-link" href="#"><i class="icon-basket-loaded"></i> Solicitud Devolución</a>
+                    </li>
+
                     <li class="nav-item" @click="menu=8">
                         <a class="nav-link" href="#"><i class="icon-notebook"></i> Historial Pedidos</a>
                     </li>
@@ -62,11 +71,25 @@
                     </li>
                 </ul>
             </li>
+            
+            <li class="nav-item nav-dropdown">
+                <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-wrench"></i> Configuraciones</a>
+                <ul class="nav-dropdown-items">
+                    <li class="nav-item" @click="menu=17">
+                        <a class="nav-link" href="#"><i class="icon-pencil"></i> Documentos</a>
+                    </li>
+                </ul>
+            </li>
+
             <li class="nav-item">
-                <a class="nav-link" href="main.html"><i class="icon-book-open"></i> Ayuda <span class="badge badge-danger">PDF</span></a>
+                <a class="nav-link" href="#" @click="menu=18"><i class="icon-book-open"></i> Ayuda <span class="badge badge-danger">PDF</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="main.html"><i class="icon-info"></i> Acerca de...<span class="badge badge-info">IT</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="#" @click="menu=16" ><i class="icon-info"></i> Documentacíon<span class="badge badge-info">IT</span></a>
             </li>
         </ul>
     </nav>

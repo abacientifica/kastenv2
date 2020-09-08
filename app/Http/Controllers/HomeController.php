@@ -10,6 +10,9 @@ use App\ListaPrecios;
 use App\ListaPreciosDet;
 use App\Direcciones;
 use App\MovimientosDet;
+use App\Asesores;
+use App\Conceptos;
+use App\ConceptosDocumentos;
 
 class HomeController extends Controller
 {
@@ -107,6 +110,29 @@ class HomeController extends Controller
         
         return[
             'productos'=>$Lista
+        ];
+    }
+
+    /**
+     * Retorna la lista de asesores activos en aba
+     */
+    public function CargarAsesores(Request $request){
+        $asesores =  Asesores::where('Inactivo',0)->where('IdAsesor','<>',0)->orderBy('Nombre')->get();
+        return [
+            'asesores'=>$asesores
+        ];
+    }
+
+    /**
+     * Retorna la lista de asesores activos en aba
+     */
+    public function CargarConceptosDocumentos(Request $request){
+        $conceptos =  Conceptos::select('conceptos.IdConcepto','NmConcepto')
+                        ->leftjoin('conceptosdocumentos','conceptosdocumentos.IdConcepto','=','conceptos.IdConcepto')
+                        ->where("conceptosdocumentos.IdDocumento",'=',$request->IdDoc)
+                        ->where('conceptos.Inactivo',0)->get();
+        return [
+            'conceptos'=>$conceptos
         ];
     }
 }

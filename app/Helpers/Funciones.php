@@ -24,6 +24,11 @@ class Funciones{
         }
     }
 
+    public static function NombreDoc($Id){
+        $Documento = Documentos::FindOrFail($Id);
+        return $Documento->Nombre;
+    }
+
     public static function ObtenerTercero($IdTercero){
         $tercero = DB::table('terceros')->where('IdTercero','=',$IdTercero)->take(1)->get();
         return $tercero;
@@ -205,6 +210,36 @@ class Funciones{
             }
 
             DB::update("UPDATE movimientos_det SET FechaDet='" . $FechaDocEtrada . "' WHERE IdMovimiento=" . $IdMovimiento);
+            return true;
+        }
+        catch(Exception $e){
+            return false;
+        }
+    }
+
+    public function DesAutorizarMovimiento(Request $request){
+        try{
+            $Movimientos = Movimientos::findOrFail($IdMovimiento);
+            $Movimientos->Estado = "DIGITADA";
+            $Movimientos->Autorizado = 1;
+            $Movimientos->IdAutoriza = \Auth::user()->Usuario;
+            $Movimientos->FhAutoriza = date('y-m-d H:i:s');
+            //Para que las facturas sin imprimir queden con la fecha de autorizacion
+            if ($Movimientos->IdDocumento == 3)
+                $Movimientos->Fecha = $Movimientos->FhAutoriza;
+
+            if ($Movimientos->documento->Operacion == 1) {
+                $Movimientos->FhAutoriza = $Movimientos->Fecha;
+                $FechaDocEtrada = $Movimientos->Fecha;
+            } else{
+                $FechaDocEtrada = date('Y-m-d H:i:s');
+            }
+            $Movimientos->save();
+            foreach($Movimientos->detalles as $det){
+                $MovDet = MovimientosDet::findOrFail($det->IdMovimientoDet);
+                $MovDet->Estado='DIGITADO';
+                $MovDet->save();
+            }
             return true;
         }
         catch(Exception $e){

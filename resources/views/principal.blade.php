@@ -2,7 +2,7 @@
 <html lang="es">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Sistema Ventas Kasten V2">
@@ -10,6 +10,9 @@
     <meta name="keyword" content="Sistema Inventario">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="img/favicon.png">
+
+    <!--Definimos el usuario que va utilizar el loguin de pusher-->
+    <meta name="userId" content="{{ Auth::check() ? Auth::user()->Usuario : ''}}">  
     <title>Kasten V2</title>
     <!-- Main styles for this application -->
     <link href="css/plantilla.css" rel="stylesheet">
@@ -30,26 +33,9 @@
                     <a class="nav-link" href="#">Escritorio</a>
                 </li>
             </ul>
+            
             <ul class="nav navbar-nav ml-auto">
-                <li class="nav-item d-md-down-none">
-                    <a class="nav-link" href="#" data-toggle="dropdown">
-                        <i class="icon-bell"></i>
-                        <span class="badge badge-pill badge-danger">5</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right">
-                        <div class="dropdown-header text-center">
-                            <strong>Notificaciones</strong>
-                        </div>
-                        <a class="dropdown-item" href="#">
-                            <i class="fa fa-envelope-o"></i> Ingresos
-                            <span class="badge badge-success">3</span>
-                        </a>
-                        <a class="dropdown-item" href="#">
-                            <i class="fa fa-tasks"></i> Ventas
-                            <span class="badge badge-danger">2</span>
-                        </a>
-                    </div>
-                </li>
+                <notificacion :notifications="notifications" v-model="menu"></notificacion>
                 <div class="menu-rigth" v-if="{{\Auth::check()}}">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">

@@ -9,16 +9,17 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $anio = '2019';
+        $anio = 2019;
         $IdTercero =  \Auth::user()->IdTercero;
-        $pedidos = DB::select("select MONTH(FechaDet) as mes ,YEAR(FechaDet) as anio ,SUM(movimientos_det.Total) as total  from movimientos_det where IdDocumento = 61 and IdTercero = ".$IdTercero."
-        GROUP BY MONTH(FechaDet),YEAR(FechaDet)");
-        /* ->select(DB::raw("MONTH(movimientos.Fecha) as mes"),DB::raw("YEAR(movimientos.Fecha) as anio"),DB::raw("SUM(movimientos.Total) as total"))
-        ->whereYear("movimientos.Fecha","=",$anio)
+        $pedidos = DB::table('movimientos')
+        ->select(DB::raw('MONTHNAME(movimientos.Fecha) as mes'),
+        DB::raw('YEAR(movimientos.Fecha) as anio'),
+        DB::raw('SUM(movimientos.Total) as total'))
+        ->whereYear('movimientos.Fecha',$anio)
         ->where('IdTercero','=',$IdTercero)
-        ->where('IdDocumento','61')
-        ->groupBy(DB::raw("MONTH(movimientos.Fecha)"),DB::raw("YEAR(movimientos.Fecha)"))
-        ->get(); */
+        ->where('IdDocumento','=','61')
+        ->groupBy(DB::raw('MONTHNAME(movimientos.Fecha)'),DB::raw('YEAR(movimientos.Fecha)'))
+        ->get(); 
 
         $ventas=DB::table('movimientos')
         ->select(DB::raw('MONTHNAME(movimientos.Fecha) as mes'),

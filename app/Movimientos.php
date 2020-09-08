@@ -90,6 +90,10 @@ class Movimientos extends Model
         return $this->hasMany('App\MovimientosDet','IdMovimiento','IdMovimiento');
     }
 
+    public function tercero(){
+        return $this->hasMany('App\Terceros','IdTercero','IdTercero');
+    }
+
 
 }
 

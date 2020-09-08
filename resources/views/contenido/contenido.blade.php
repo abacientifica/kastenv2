@@ -33,13 +33,39 @@
 </template>
 
 <template v-if="menu==8">
-    <h1>Historico Pedidos</h1>
+        <historicomov></historicomov>
 </template>
 <template v-if="menu==9">
     <usuarios></usuarios>
 </template>
 
+<template v-if="menu==12">
+    <reporte-ventas></reporte-ventas>
+</template>
+
 <template v-if="menu==13">
     <configuracion></configuracion>
+</template>
+
+<template v-if="menu==14">
+    <facturacion></facturacion>
+</template>
+
+<template v-if="menu==15">
+    <solicitud-devolucion></solicitud-devolucion>
+</template>
+
+<template v-if="menu==16">
+    <commits><commits>
+</template>
+
+<template v-if="menu==17">
+    <configuracionesdoc><configuracionesdoc>
+</template>
+
+<template v-if="menu==18">
+    <main class="main">
+        <nuevomovimiento :IdDocSeleccionado="3"></nuevomovimiento>
+    </main>
 </template>
 @endsection

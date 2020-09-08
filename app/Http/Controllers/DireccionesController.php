@@ -14,7 +14,13 @@ class DireccionesController extends Controller
     }
     public function ObtenerDireccionesTercero(Request $request)
     {
-        $IdTercero = \Auth::user()->IdTercero;
+        $IdTercero ='';
+        if($request->Id >0 ){
+            $IdTercero = $request->Id;
+        }
+        else{
+            $IdTercero = \Auth::user()->IdTercero;
+        }
         $direcciones = Direcciones::select('IdDireccion','NmDireccion')->where('IdTercero','=',$IdTercero)->get();
         return[
             'direcciones'=>$direcciones
