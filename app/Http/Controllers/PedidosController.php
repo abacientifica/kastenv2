@@ -251,7 +251,6 @@ class PedidosController extends Controller
         
     }
 
-
     public function obtenerPedido(Request $request){
 
         $pedidos = Movimientos::select('IdMovimiento','NroDocumento','Fecha','Soporte',DB::raw('date_format(movimientos.Fecha1,"%Y-%m-%d") as Fecha1'),DB::raw('date_format(movimientos.Fecha2,"%Y-%m-%d") as Fecha2')
