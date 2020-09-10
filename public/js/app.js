@@ -55328,13 +55328,16 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.component("v-select", __WEBPACK_IMPO
             //Lista el array categorias.
             var me = this;
             var url = '/pedidos?page=' + page + '&buscar=' + buscar + '&criterio=' + criterio;
+            this.isLoading = true;
             axios.get(url).then(function (response) {
                 //Asi le asignamos al array categoria los datos de la respuesta
                 var respuesta = response.data;
                 me.arrayPedidos = respuesta.pedidos.data;
                 me.pagination = respuesta.pagination;
+                me.isLoading = false;
             }).catch(function (error) {
                 // handle error
+                me.isLoading = false;
                 console.log(error);
             });
         },
@@ -55514,6 +55517,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.component("v-select", __WEBPACK_IMPO
         verPedido: function verPedido(id) {
             var me = this;
             me.listado = 2;
+            this.isLoading = true;
             var url = '/pedido/obtenerPedido?id=' + id;
             axios.get(url).then(function (response) {
                 var respuesta = response.data;
@@ -55542,6 +55546,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.component("v-select", __WEBPACK_IMPO
                 objpedidosDet.forEach(function (detalle) {
                     me.arrayDetalle.push(detalle);
                 });
+                me.isLoading = false;
             }).catch(function (error) {
                 // handle error
                 console.log(error);
@@ -55584,6 +55589,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.component("v-select", __WEBPACK_IMPO
             });
         },
         mostrarDetalle: function mostrarDetalle() {
+            this.isLoading = true;
             this.listado = 0;
             this.idtercero = 0;
             this.tipo_comprobante = 'BOLETA';
@@ -55602,6 +55608,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.component("v-select", __WEBPACK_IMPO
             this.fecha2 = '';
             this.direccion = '';
             this.obtenerDirecciones();
+            this.isLoading = false;
         },
         ocultarDetalle: function ocultarDetalle() {
             this.listado = 1;

@@ -858,14 +858,17 @@
             ListarIngresos(page,buscar,criterio){//Lista el array categorias.
                 let me = this;
                 var url = '/pedidos?page='+page+'&buscar='+buscar+'&criterio='+criterio;
+                this.isLoading = true;
                 axios.get(url).then(function (response) {
                     //Asi le asignamos al array categoria los datos de la respuesta
                     var respuesta = response.data;
                     me.arrayPedidos = respuesta.pedidos.data;
                     me.pagination = respuesta.pagination;
+                    me.isLoading = false;
                 })
                 .catch(function (error) {
                     // handle error
+                    me.isLoading = false;
                     console.log(error);
                 });
             },
@@ -1048,6 +1051,7 @@
             verPedido(id){
                 let me = this;
                 me.listado = 2;
+                this.isLoading = true;
                 var url = '/pedido/obtenerPedido?id='+id;
                 axios.get(url).then(function (response) {
                     var respuesta = response.data;
@@ -1076,6 +1080,7 @@
                     objpedidosDet.forEach(detalle => {
                         me.arrayDetalle.push(detalle);
                     });
+                    me.isLoading = false;
                 })
                 .catch(function (error) {
                     // handle error
@@ -1122,6 +1127,7 @@
             },
 
             mostrarDetalle(){
+                this.isLoading = true;
                 this.listado = 0;
                 this.idtercero = 0;
                 this.tipo_comprobante='BOLETA';
@@ -1140,6 +1146,7 @@
                 this.fecha2='';
                 this.direccion='';
                 this.obtenerDirecciones();
+                this.isLoading = false;
             },
 
             ocultarDetalle(){
