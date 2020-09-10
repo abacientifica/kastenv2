@@ -4577,6 +4577,7 @@ Vue.component('commits', __webpack_require__(101));
 Vue.component('nuevomovimiento', __webpack_require__(104));
 Vue.component('pruebas', __webpack_require__(107));
 Vue.component('configuracionesdoc', __webpack_require__(110));
+
 //Con mixin creamos variables globales que se puede utilizar en todos los componentes
 
 

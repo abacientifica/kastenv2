@@ -22,7 +22,8 @@
               </div>
               <div class="row">
                 <div class="col-6">
-                  <button type="submit" class="btn btn-primary px-4">Acceder</button>
+                  <button type="submit" class="btn btn-primary px-4">Acceder</button><hr>
+                  Recuerdame <input type="checkbox" name="recuerda" id="recuerda">
                 </div>
               </div>
             </div>
@@ -40,4 +41,29 @@
     </div>
     </div>
 </div>
+<script type="text/javascript">
+  window.onload = function() {
+    let usuario = document.getElementById('usuario')
+    let Storage = window.localStorage.getItem("UsuarioReg")
+    let check = document.getElementById('recuerda').checked;
+    //Validamos si hay un usuario guardado en el storage
+    if(Storage===null){
+      usuario.value = ''
+    }
+    else{
+      usuario.value = Storage;
+      document.getElementById('recuerda').checked = true
+    }
+    //Guardamos o eliminamos el usuario en el storage
+    $('#recuerda').click(function(){
+      let check = document.getElementById('recuerda').checked;
+      if(check){
+        window.localStorage.setItem("UsuarioReg", usuario.value);
+      }
+      else{
+        window.localStorage.removeItem("UsuarioReg")
+      }
+    })
+  };
+</script>
 @endsection

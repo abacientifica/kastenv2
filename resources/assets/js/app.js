@@ -30,6 +30,7 @@ Vue.component('commits', require('./components/CambiosSistema.vue'));
 Vue.component('nuevomovimiento', require('./components/movimientos/NuevoMovimiento.vue'));
 Vue.component('pruebas', require('./components/movimientos/PruevaVuex.vue'));
 Vue.component('configuracionesdoc', require('./components/configuraciones/ConfiguracionesDocumentos.vue'));
+
 //Con mixin creamos variables globales que se puede utilizar en todos los componentes
 
 import Echo from 'laravel-echo'
