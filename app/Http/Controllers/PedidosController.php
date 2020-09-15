@@ -29,8 +29,10 @@ class PedidosController extends Controller
         $IdTercero =  \Auth::user()->IdTercero;
         $criterio = $request->criterio;
         $busqueda = $request->buscar;
-        $Pedidos = Movimientos::select('IdMovimiento','NroDocumento','Fecha','Soporte','Fecha1','Fecha2','Total','Estado','movimientos.Comentarios','NmDireccion','asesores.Nombre as Asesor')
+        $Pedidos = Movimientos::select('IdMovimiento','NroDocumento','Fecha','Soporte','Fecha1','Fecha2','Total','Estado','movimientos.Comentarios',DB::raw("concat(NmDireccion,'-',NmTipoDireccion) as NmDireccion"),'asesores.Nombre as Asesor','NombreCorto')
         ->leftjoin('direcciones','movimientos.IdDireccion','=','direcciones.IdDireccion')
+        ->leftjoin('tipos_direcciones','tipos_direcciones.IdTipoDireccion','=','direcciones.Tipo')
+        ->leftjoin('terceros','terceros.IdTercero','=','movimientos.IdTercero')
         ->leftjoin('asesores','asesores.IdAsesor','=','movimientos.IdAsesor');
         //->where('movimientos.IdTercero','=', $IdTercero);
         if($criterio !='' && $busqueda !=''){

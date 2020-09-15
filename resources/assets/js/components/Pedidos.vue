@@ -49,6 +49,7 @@
                                     <th>Id</th>
                                     <th>Nro</th>
                                     <th>Soporte</th>
+                                    <th>Cliente</th>
                                     <th>Direccion</th>
                                     <th>Fecha</th>
                                     <th>Fecha Min. Entrega</th>
@@ -73,6 +74,7 @@
                                     <td v-text="pedido.IdMovimiento"></td>
                                     <td v-text="pedido.NroDocumento"></td>
                                     <td v-text="pedido.Soporte"></td>
+                                    <td v-text="pedido.NombreCorto"></td>
                                     <td v-text="pedido.NmDireccion"></td>
                                     <td v-text="pedido.Fecha"></td>
                                     <td v-text="pedido.Fecha1"></td>
